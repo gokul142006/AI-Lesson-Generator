@@ -46,67 +46,7 @@ AI_Lesson_Generator/
 
 ---
 
-## 🛠️ Installation
 
-### 1. Clone / download the project
-
-Place the `AI_Lesson_Generator` folder wherever you'd like to run it from.
-
-### 2. Create a virtual environment
-
-**macOS / Linux:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-**Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Set your OpenAI API key
-
-Never hardcode your API key — the app reads it from the `OPENAI_API_KEY`
-environment variable.
-
-**macOS / Linux:**
-```bash
-export OPENAI_API_KEY="your-api-key-here"
-```
-
-**Windows (PowerShell):**
-```powershell
-$env:OPENAI_API_KEY="your-api-key-here"
-```
-
-You can also create a `.env` file and load it with a tool of your choice,
-as long as `OPENAI_API_KEY` ends up in the process environment before
-Streamlit starts.
-
-### 5. Run the app
-
-```bash
-streamlit run app.py
-```
-
-The app will open in your browser at `http://localhost:8501`.
-
----
-
-## 📸 Screenshots
-
-_Add screenshots of the Generate Lesson page, the editable lesson view,
-and the Lesson History page here once you've run the app locally._
-
----
 
 ## 🚀 Future Improvements
 
