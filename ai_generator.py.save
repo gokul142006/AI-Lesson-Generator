@@ -1,0 +1,243 @@
+"""
+ai_generator.py
+----------------
+Handles communication with the Google Gemini API.
+
+The rest of the application does not need to know which AI provider
+is being used. This file receives the four teacher inputs and returns
+a structured lesson plan matching SECTION_SCHEMA.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from typing import Dict
+
+from google import genai
+
+from utils import SECTION_SCHEMA, empty_lesson_dict
+
+
+# Stable Gemini model with free-tier availability.
+MODEL_NAME = "gemini-2.5-flash"
+
+
+class LessonGenerationError(Exception):
+    """Raised whenever lesson generation fails."""
+
+    def __init__(self, user_message: str):
+        super().__init__(user_message)
+        self.user_message = user_message
+
+
+def _get_client():
+    """
+    Build a Gemini client using the GEMINI_API_KEY environment variable.
+    """
+    api_key = os.environ.get("GEMINI_API_KEY")
+
+    if not api_key or not api_key.strip():
+        raise LessonGenerationError(
+            "No Gemini API key was found. Please set the "
+            "GEMINI_API_KEY environment variable before running the app."
+        )
+
+    return genai.Client(api_key=api_key)
+
+
+def _build_system_prompt() -> str:
+    """
+    Build the main teaching instructions for Gemini.
+    """
+
+    schema_keys = ", ".join(f'"{key}"' for key, _ in SECTION_SCHEMA)
+
+    return f"""
+You are an experienced educator and instructional designer with
+over 25 years of classroom teaching experience across multiple
+subjects and grade levels.
+
+You design classroom-ready, age-appropriate, practical, engaging,
+and useful lesson plans.
+
+Follow these principles strictly:
+
+- Map objectives and activities to Bloom's Taxonomy:
+  Remember, Understand, Apply, Analyze, Evaluate, Create.
+- Use age-appropriate language and examples for the given grade.
+- Design engaging, practical, hands-on classroom activities.
+- Include realistic and usable assessments.
+- Include MCQs, short-answer questions, and higher-order thinking
+  questions where appropriate.
+- Never invent unsafe, inappropriate, or obviously false content.
+- If uncertain about a specific fact, keep the explanation general.
+- Maintain a professional classroom-ready tone.
+- Write useful Markdown inside each field.
+- Use bullet points and numbered steps when useful.
+- Be concrete and practical, not vague or generic filler.
+
+Create content specifically for the subject, grade, topic, and duration
+provided by the teacher.
+
+The response must contain these exact fields:
+
+{schema_keys}
+
+Every field must contain useful content for the teacher.
+"""
+
+
+def _build_user_prompt(
+    subject: str,
+    grade: str,
+    topic: str,
+    duration: str,
+) -> str:
+    """
+    Build the teacher's lesson request.
+    """
+
+    return f"""
+Create a complete, classroom-ready lesson plan.
+
+Teacher inputs:
+
+Subject: {subject}
+Grade: {grade}
+Topic: {topic}
+Duration: {duration}
+
+Generate rich, specific, age-appropriate content for every required
+lesson section.
+
+The lesson should be practical enough for a teacher to use directly
+in a real classroom.
+
+Do not omit any required section.
+"""
+
+
+def _build_response_schema() -> dict:
+    """
+    Build a JSON schema dynamically from utils.SECTION_SCHEMA.
+
+    Gemini will use this schema to return structured JSON instead of
+    unpredictable free-form text.
+    """
+
+    properties = {
+        key: {
+            "type": "string",
+            "description": label,
+        }
+        for key, label in SECTION_SCHEMA
+    }
+
+    keys = [key for key, _ in SECTION_SCHEMA]
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": keys,
+        "additionalProperties": False,
+        "propertyOrdering": keys,
+    }
+
+
+def generate_lesson_plan(
+    subject: str,
+    grade: str,
+    topic: str,
+    duration: str,
+) -> Dict[str, str]:
+    """
+    Generate a complete lesson plan using Gemini.
+
+    Returns:
+        Dictionary containing all SECTION_SCHEMA fields.
+
+    Raises:
+        LessonGenerationError:
+            If the API key is missing, the API request fails,
+            or Gemini returns invalid JSON.
+    """
+
+    client = _get_client()
+
+    system_prompt = _build_system_prompt()
+    user_prompt = _build_user_prompt(
+        subject,
+        grade,
+        topic,
+        duration,
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=user_prompt,
+            config={
+                "system_instruction": system_prompt,
+                "temperature": 0.7,
+                "max_output_tokens": 20000,
+                "response_mime_type": "application/json",
+                "response_json_schema": _build_response_schema(),
+            },
+        )
+
+    except Exception as exc:
+        error_text = str(exc).lower()
+
+        if "401" in error_text or "403" in error_text:
+            raise LessonGenerationError(
+                "The Gemini API key appears to be invalid or does not "
+                "have permission to use the Gemini API. Please check "
+                "your GEMINI_API_KEY."
+            )
+
+        if "429" in error_text or "quota" in error_text or "rate" in error_text:
+            raise LessonGenerationError(
+                "The Gemini API free-tier limit has been reached. "
+                "Please wait and try again later."
+            )
+
+        if "connection" in error_text or "network" in error_text:
+            raise LessonGenerationError(
+                "Could not connect to the Gemini API. Please check "
+                "your internet connection and try again."
+            )
+
+        raise LessonGenerationError(
+            f"Gemini API error: {exc}"
+        )
+
+    raw_text = getattr(response, "text", None)
+
+    if not raw_text:
+        raise LessonGenerationError(
+            "Gemini returned an empty response. Please try generating "
+            "the lesson plan again."
+        )
+
+    try:
+        data = json.loads(raw_text)
+    except json.JSONDecodeError:
+        raise LessonGenerationError(
+            "Gemini returned a response that could not be converted "
+            "into the lesson-plan format. Please try again."
+        )
+
+    # Normalize the Gemini response so the rest of the application
+    # always receives exactly the structure it expects.
+    lesson = empty_lesson_dict()
+
+    for key, _ in SECTION_SCHEMA:
+        value = data.get(key, "")
+
+        if isinstance(value, (list, dict)):
+            value = json.dumps(
+                value,
+                indent=2,
+                ensuq!
+

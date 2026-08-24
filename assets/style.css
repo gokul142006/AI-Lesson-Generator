@@ -1,0 +1,133 @@
+/* ==========================================================================
+   AI Lesson Plan Generator — Custom Styling
+   A clean, modern, "commercial ed-tech product" look layered on top of
+   Streamlit's default components.
+   ========================================================================== */
+
+:root {
+    --primary: #1F3B57;
+    --primary-light: #2E5C86;
+    --accent: #2FA88C;
+    --accent-soft: #E8F6F1;
+    --bg-soft: #F5F7FA;
+    --border-soft: #E2E8F0;
+    --text-main: #1F2937;
+    --text-muted: #64748B;
+}
+
+/* Overall app background */
+.stApp {
+    background-color: var(--bg-soft);
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: var(--primary);
+}
+section[data-testid="stSidebar"] * {
+    color: #F1F5F9 !important;
+}
+section[data-testid="stSidebar"] .stRadio > label {
+    font-weight: 600;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: var(--primary);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Card container look for st.container(border=True) */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    background-color: #FFFFFF;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    padding: 0.4rem 0.2rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* Primary buttons */
+.stButton > button[kind="primary"] {
+    background-color: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.2px;
+    box-shadow: 0 2px 6px rgba(47, 168, 140, 0.35);
+}
+.stButton > button[kind="primary"]:hover {
+    background-color: #26906F;
+}
+
+/* Secondary buttons */
+.stButton > button {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Download buttons */
+.stDownloadButton > button {
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background-color: #FFFFFF;
+}
+.stDownloadButton > button:hover {
+    background-color: var(--accent-soft);
+}
+
+/* Text inputs */
+.stTextInput > div > div > input,
+.stSelectbox > div > div,
+.stTextArea textarea {
+    border-radius: 8px !important;
+}
+
+/* Expanders as "cards" */
+.streamlit-expanderHeader {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Success / error / info boxes get slightly rounder corners */
+div[data-testid="stAlert"] {
+    border-radius: 10px;
+}
+
+/* Small muted caption text */
+.app-caption {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Badge-style pill for metadata (subject / grade / topic / duration) */
+.meta-pill {
+    display: inline-block;
+    background-color: var(--accent-soft);
+    color: var(--primary);
+    border-radius: 999px;
+    padding: 0.25rem 0.9rem;
+    margin: 0 0.35rem 0.35rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Hero header banner on the Generate page */
+.hero-banner {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: 16px;
+    padding: 2rem 2rem;
+    color: white;
+    margin-bottom: 1.2rem;
+}
+.hero-banner h1 {
+    color: white;
+    margin-bottom: 0.3rem;
+}
+.hero-banner p {
+    color: #DCE7F0;
+    margin: 0;
+}
